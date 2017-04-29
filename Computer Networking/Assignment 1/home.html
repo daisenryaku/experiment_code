@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Computer Network Web Server</title>
+</head>
+
+<!--html-->
+<body>
+  <div id="header">
+  <h1 onclick="change()" style="text-align:center">Web Server in Action</h1>
+  </div>
+
+  <div id="nav">
+  web 服务器支持功能：<br>
+  1. 文字、图片、视频加载显示<br>
+  2. 以get/post方式提交表单到服务器<br>
+  3. 服务器MVC架构模板渲染显示<br>
+  4. 发送head请求<br>
+  5. 大文件上传
+  </div>
+
+  <div id="section">
+  <p>•提交表单到服务器</p>
+  <form method="get" action="/" >
+    <input name="value" type="text" value="hello">
+    <input type="submit" value="以GET提交">
+  </form>
+
+  <form method="post" action="/" >
+    <input name="value" type="text" value="goodbye">
+    <input type="submit" value="以POST提交">
+  </form>
+
+  <p>
+  <button id="head" type="button" name="button">•发送HEAD请求到服务器</button>
+  </p>
+
+  </div>
+
+  <div id="footer">
+    <a href="http://www.github.com/daisenryaku">
+      <img src="http://localhost:8080/images/github.png" width="50" height="50"/>
+    </a>
+
+    <p>Copyright@Yuhang Zang， UESTC</p>
+  </div>
+</body>
+
+<!--css-->
+  <style>
+    h1 {
+      color: #333333;
+      font-size: 40px;
+      text-shadow: 3px 3px 3px #666666;
+    }
+  </style>
+
+  <style>
+  #header {
+      background-color:#eeeeee;
+      color:white;
+      text-align:center;
+      padding:1px;
+  }
+  #nav {
+      line-height:30px;
+      background-color:#eeeeee;
+      height:380px;
+      width:150px;
+      float:left;
+      padding:5px;
+  }
+  #section {
+      width:350px;
+      float:left;
+      padding:10px;
+  }
+  #footer {
+      background-color:#29c6cd;
+      color:black;
+      clear:both;
+      bottom:0;
+      text-align:center;
+  }
+</style>
+
+<!--JavaScript-->
+<script>
+// head 请求
+  document.querySelector('#head').addEventListener('click', e => {
+    let xhr = new XMLHttpRequest()
+    xhr.open(
+      'HEAD',
+      'head'
+    )
+    xhr.send()
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        console.log(xhr.responseText)
+      }
+    }
+  })
+
+// title change
+function change() {
+  document.getElementsByTagName('h1')[0].style.color = '#ff0000';
+}
+</script>
+
+</html>
