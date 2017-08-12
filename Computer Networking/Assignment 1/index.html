@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test1</title>
+</head>
+<style>
+  form {
+    margin: 20px 0
+  }
+</style>
+<body>
+
+<form method="post" action="/" >
+    <input name="name" type="text" value="喵了个咪">
+    <input name="url" type="text" value="www.baidu.com">
+    <input type="submit" value="以POST提交">
+</form>
+
+
+<form method="get" action="/" >
+    <input name="name" type="text" value="喵了个咪">
+    <input name="url" type="text" value="www.baidu.com">
+    <input type="submit" value="以GET提交">
+</form>
+
+<button id="head" type="button" name="button">发送HEAD请求</button>
+
+<form id="upload1" name="upload1" action="/upload" enctype="multipart/form-data" method="post">
+  <label for="file-upload1">选择上传文件(普通上传)</label>
+  <input id="file-upload1" name="file1" type="file">
+  <div id="fileName1"></div>
+  <div id="fileSize1"></div>
+  <div id="fileType1"></div>
+  <div class="row1">
+    <input id="startUpload1" type="submit" value="开始上传">
+  </div>
+</form>
+
+<form id="upload2" name="upload2" action="/uploadChunk" enctype="multipart/form-data" method="post">
+  <label for="file-upload2">选择上传文件(支持断点续传)</label>
+  <input id="file-upload2" name="file2" type="file">
+  <div id="fileName2"></div>
+  <div id="fileSize2"></div>
+  <div id="fileType2"></div>
+  <div class="row2">
+    <input id="startUpload2" type="submit" value="开始上传">
+  </div>
+</form>
+
+<div class="download">
+
+</div>
+
+</body>
+<script>
+// head 请求
+  document.querySelector('#head').addEventListener('click', e => {
+    let xhr = new XMLHttpRequest()
+    xhr.open(
+      'HEAD',
+      'head'
+    )
+    xhr.send()
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        console.log(xhr.responseText)
+      }
+    }
+  })
+// 普通上传
+// 上传文件
+document.querySelector('#file-upload1').addEventListener('change', e => {
+  let file = document.querySelector('#file-upload1').files[0]
+  if (file) {
+    let fileSize = 0
+    if (file.size > 1024 * 1024) fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB'
+    else fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB'
+    document.getElementById('fileName1').innerHTML = '文件名: ' + file.name
+    document.getElementById('fileSize1').innerHTML = '文件大小: ' + fileSize
+    document.getElementById('fileType1').innerHTML = file.type ? '文件类型: ' + file.type : '文件类型: 未知'
+  }
+})
+// 开始上传
+document.querySelector('#upload1').addEventListener('submit', e => {
+  e.preventDefault()
+  if (document.querySelector('#file-upload1').files.length !== 1) {
+    alert('请选择一个文件')
+    return
+  }
+
+  let xhr = new XMLHttpRequest()
+  let data = new FormData(e.target)
+
+  xhr.open('POST', e.target.action, true)
+  xhr.send(data)
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      getFilesList()
+      alert(xhr.responseText)
+    }
+  }
+})
+
+// 断点续传
+// 上传文件
+document.querySelector('#file-upload2').addEventListener('change', e => {
+  let file = document.querySelector('#file-upload2').files[0]
+  if (file) {
+    let fileSize = 0
+    if (file.size > 1024 * 1024) fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB'
+    else fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB'
+    document.getElementById('fileName2').innerHTML = '文件名: ' + file.name
+    document.getElementById('fileSize2').innerHTML = '文件大小: ' + fileSize
+    document.getElementById('fileType2').innerHTML = file.type ? '文件类型: ' + file.type : '文件类型: 未知'
+  }
+})
+// 开始上传
+document.querySelector('#upload2').addEventListener('submit', e => {
+  e.preventDefault()
+  if (document.querySelector('#file-upload2').files.length !== 1) {
+    alert('请选择一个文件')
+    return
+  }
+
+  let file = document.querySelector('#file-upload2').files[0]
+  const CHUNK_SIZE = 1024 * 10
+  const SIZE = file.size
+  let start = 0
+  let end = CHUNK_SIZE
+
+  while(start < SIZE) {
+    let xhr = new XMLHttpRequest()
+    xhr.open('POST', e.target.action)
+    xhr.setRequestHeader('Content-Range', `${start}-${end}/${SIZE}`)
+    let blob = new FormData()
+    blob.append('fileName', file.name)
+    blob.append('file', file.slice(start, end))
+    start = end
+    end = start + CHUNK_SIZE
+    xhr.send(blob)
+  }
+
+})
+
+// 读取可下载文件列表
+function getFilesList() {
+  let xhr = new XMLHttpRequest()
+  xhr.open('GET', 'download')
+  xhr.send()
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      let files = xhr.response.split(',')
+      let html = ''
+      files.forEach(item => {
+        html += `<p><a href="/upload/${item}">${item}</a></p>`
+      })
+      document.querySelector('.download').innerHTML = html
+    }
+  }
+}
+
+getFilesList()
+</script>
+</html>
